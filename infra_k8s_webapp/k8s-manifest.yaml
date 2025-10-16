@@ -1,0 +1,69 @@
+# Kubernetes manifest for the webapp, including common objects.
+
+# --- Deployment ---
+# Manages the application pods, including replicas and updates.
+# The 'name' here matches the deployment targeted in cloudbuild.yaml.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp-deployment
+spec:
+  replicas: 2 # Start with 2 replicas, the HPA will manage this value.
+  selector:
+    matchLabels:
+      app: webapp
+  template:
+    metadata:
+      labels:
+        app: webapp
+    spec:
+      containers:
+      - name: webapp # This container name is referenced in cloudbuild.yaml
+        image: gcr.io/google-samples/hello-app:1.0 # Placeholder image, will be replaced by Cloud Build
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "250m"
+            memory: "256Mi"
+
+---
+# --- Service ---
+# Exposes the webapp to the internet via a Google Cloud LoadBalancer.
+apiVersion: v1
+kind: Service
+metadata:
+  name: webapp-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: webapp
+  ports:
+  - protocol: TCP
+    port: 80 # External port for HTTP traffic
+    targetPort: 8080 # Port on the container
+
+---
+# --- HorizontalPodAutoscaler ---
+# Automatically scales the number of pods in the deployment based on CPU usage.
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: webapp-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: webapp-deployment # This must match the name of the deployment
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 80 # Target 80% CPU utilization

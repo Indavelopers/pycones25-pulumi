@@ -1,0 +1,14 @@
+# Kustomize configuration for the webapp.
+# This file defines the base resources and provides a target for image updates.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# List of resource files to be included in the kustomization.
+resources:
+  - k8s-manifest.yaml
+
+# This 'images' block is what Cloud Build will target to update the container image.
+# The name should match the image path used in the Deployment manifest, without the tag.
+images:
+  - name: gcr.io/google-samples/hello-app
+    newTag: "1.0" # This tag will be replaced by the CI pipeline.

@@ -1,0 +1,6 @@
+encryptionsalt: v1:R9Bgchv8iDs=:v1:9C1/p5Kw7jEGhwYy:pQ1ULPNZbWhZroQ0SrYlQ1OeSaiG1Q==
+config:
+  gcp:project: pycones25-pulumi
+  gcp:region: europe-west4
+  gcp:zone: europe-west4-a
+  num_instances: 2

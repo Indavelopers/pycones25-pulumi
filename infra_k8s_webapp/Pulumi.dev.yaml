@@ -1,0 +1,9 @@
+encryptionsalt: v1:IDH0NSPO5Yw=:v1:Rrsn4r3XMWV80/jT:P1/8BmTsPmmWPifs3cB9aujkE4iz3Q==
+config:
+  gcp:project: pycones25-pulumi
+  gcp:region: europe-southwest1
+  gcp:zone: europe-southwest1-a
+  gke_admin_emails:
+    - info@indavelopers.com
+  gke_developer_groups:
+    - demo-group@indavelopers.com

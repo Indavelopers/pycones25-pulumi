@@ -1,0 +1,83 @@
+# Google Cloud Build configuration for a standard Kubernetes CI pipeline.
+
+steps:
+# 1. Run Unit Tests
+# This step installs dependencies, runs pytest, and uploads the test results.
+- name: 'python:3.13-slim'
+  id: 'Test'
+  entrypoint: 'bash'
+  args:
+    - -c
+    - |
+      pip install -r requirements.txt
+      pytest --junitxml=report.xml
+      # Upload test results to GCS.
+      # gsutil is available in the Cloud Build environment.
+      # Note: You need to grant the Cloud Build service account 'Storage Object Creator' on the bucket.
+      gsutil cp report.xml gs://${_BUCKET_NAME}/test-reports/report-${SHORT_SHA}.xml
+
+# 2. Deploy Testing Infrastructure with Pulumi
+# This step deploys the infrastructure defined in the Pulumi project to a temporary stack.
+- name: 'pulumi/pulumi-gcp:latest'
+  id: 'Deploy Infra'
+  entrypoint: 'bash'
+  args:
+    - -c
+    - |
+      # Login to Pulumi using the GCS backend.
+      # The Cloud Build service account needs 'Storage Object Admin' on the state bucket.
+      pulumi login gs://${_PULUMI_STATE_BUCKET}
+      # Select or create a unique stack for this build to allow for parallel runs.
+      pulumi stack select "testing-preview-${SHORT_SHA}" --create
+      # Deploy the infrastructure.
+      pulumi up --yes
+
+# 3. Build the container image
+# This step builds the Docker image and tags it with the commit SHA.
+- name: 'gcr.io/cloud-builders/docker'
+  id: 'Build'
+  args:
+    - 'build'
+    - '-t'
+    - '${_AR_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/webapp:${SHORT_SHA}'
+    - '.'
+
+# 4. Push the container image to Artifact Registry
+# This step pushes the image built in the previous step to your private repository.
+- name: 'gcr.io/cloud-builders/docker'
+  id: 'Push'
+  args:
+    - 'push'
+    - '${_AR_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/webapp:${SHORT_SHA}'
+
+# 5. Deploy to Google Kubernetes Engine
+# This step authenticates to the GKE cluster and updates the image for the deployment.
+- name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+  id: 'Deploy'
+  entrypoint: 'bash'
+  args:
+    - '-c'
+    - |
+      # Get GKE credentials
+      gcloud container clusters get-credentials ${_GKE_CLUSTER} --region ${_GKE_LOCATION} --project ${PROJECT_ID}
+      # Use kustomize to declaratively set the new image and apply the manifests.
+      kustomize edit set image gcr.io/google-samples/hello-app=${_AR_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/webapp:${SHORT_SHA}
+      kubectl apply -k .
+
+# This specifies the image that was built, which can be used by other steps or build systems.
+images:
+- '${_AR_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/webapp:${SHORT_SHA}'
+
+# --- Substitutions ---
+# These are variables you would set in your Cloud Build Trigger configuration.
+# The values should match the resources created by your Pulumi program.
+substitutions:
+  _GKE_CLUSTER: 'gke-autopilot-cluster' # From gcp.container.Cluster name
+  _PULUMI_STATE_BUCKET: 'your-pulumi-state-bucket' # GCS bucket for Pulumi state
+  _BUCKET_NAME: 'app-assets-bucket-...' # From gcp.storage.Bucket name
+  _GKE_LOCATION: 'europe-southwest1'    # From gcp.config.region
+  _AR_REPO: 'webapp-container-repo'     # From artifactregistry.Repository repository_id
+  _AR_LOCATION: 'europe-southwest1'     # From gcp.config.region
+
+options:
+  logging: CLOUD_LOGGING_ONLY

@@ -1,0 +1,4 @@
+encryptionsalt: v1:e0Iw1pO88XE=:v1:Cz0YU8gtEnq10S3s:gj24dm6caPQHae+f3d3ugHqslU0Akg==
+config:
+  gcp:project: pycones25-pulumi
+  gcs-storage-class: NEARLINE
