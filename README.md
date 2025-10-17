@@ -14,6 +14,8 @@
 
 ## Contenido
 
+Repo GH: <https://github.com/Indavelopers/pycones25-pulumi>
+
 ### ¿Qué vas a aprender?
 
 1. ¿Qué es la IaC?
