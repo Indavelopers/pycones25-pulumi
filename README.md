@@ -17,33 +17,32 @@
 ### ¿Qué vas a aprender?
 
 1. ¿Qué es la IaC?
-2. Workflow completo de IaC con Pulumi
-3. Demo: webapp sobre Kubernetes en Google Cloud con IaC
+2. Workflow de IaC con Pulumi como ejemplo
+3. Demo: webapp completa sobre Google Kubernetes Engine en Google Cloud con IaC + integración en CI/CD
 4. "GCP training projects": IaC para crear entornos en la nube para formación o talleres
 
 **DISCLAIMER:** Algunos ejemplos pueden no tener sentido a nivel de arquitectura
 
 ### Esta charla es para ti si piensas en
 
-1. Crecer profesionalmente
-2. Avanzar en el devOps/SRE/ingeniería de plataforma
-3. Automatizar tu infraestructura
-4. Abandonar Terraform
+1. Te interesa el devOps/SRE/ingeniería de plataforma
+2. Automatizar tu infraestructura
+3. Alternativas a Terraform
 
-**CALL TO ACTION**: "La oportunidad de iniciarte en IaC utilizando tu lenguaje de desarrollo actual: Python"
+**CALL TO ACTION**: "Oportunidad: iniciarte en IaC utilizando el mismo lenguaje, Python"
 
-### Intro a la automatización de infraestructura en devOps
+### Intro a la IaC
 
-Notas:
+Notas breves:
 
 - dev &rarr; devOps &rarr; devSecOps
-  - devOps = ing. SW automatiza Ops: entrega continua y ágil, operaciones, infraestructura
+  - devOps según el SRE = ingeniero SW automatiza Ops: entrega continua y ágil, operaciones, infraestructura
   - clickOps &rarr; script Bash &rarr; script Python &rarr; **IaC** &rarr; CI/CD &rarr; gitOps? &rarr; platform engineering??
   - **Clave:** imperativo vs declarativo
-- IaC: "Infrastructure as Code"
+- IaC: "Infrastructure (*declared*) as Code"
   - Automatizar infraestructura - *no aplicaciones*
   - Despliegue, evolución, pruebas, replicación, recuperación de desastres (DR)
-  - Plantilla declarativa: repetitividad, reusabilidad, composición, abstracción
+  - Plantilla declarativa: repetitividad, reusabilidad, abstracción, composición
   - Inmutabilidad, idempotencia, dependencias
   - Versionable, validable
   - Estandarización
